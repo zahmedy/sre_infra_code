@@ -2,38 +2,49 @@ from collections import deque
 
 def reboot_order(
     dependencies: dict[str, list[str]]
-) -> list[str]:
-    execution_order = []
+) -> list[list[str]]:
+    indegree = {
+        service: len(deps)
+        for service, deps in dependencies.items()
+    }
+    
+    dependents = {
+        service: []
+        for service in dependencies
+    }
 
-    dependents = {} 
-    indegree = {}
-
-    queue = deque()
-
-    for service in dependencies:
-        indegree[service] = len(dependencies[service])
-        # add zero dependencies tasks to queue
-        if indegree[service] == 0:
-            queue.append(service)
-        
-        dependents[service] = []
-
+    # reverse adjacency 
     for service, deps in dependencies.items():
         for dep in deps:
             dependents[dep].append(service)
 
+    queue = deque(
+        service
+        for service, degree in indegree.items()
+        if degree == 0
+    )
+
+    execution_groups = []
+    processed = 0
+
+    # process each task in queue and append released ones
     while queue:
-        first_service = queue.popleft()
-        execution_order.append(first_service)
+        group = []
 
-        freed_services = dependents[first_service]
+        for _ in range(len(queue)):
+            service = queue.popleft()
+            group.append(service)
+            processed += 1
 
-        for service in freed_services:
-            indegree[service] -= 1
-            if indegree[service] == 0:
-                queue.append(service)
+            for dependent in dependents[service]:
+                indegree[dependent] -= 1
 
-    if len(execution_order) != len(dependencies):
+                if indegree[dependent] == 0:
+                    queue.append(dependent)
+
+        execution_groups.append(group)
+
+    if processed != len(dependencies):
         raise ValueError("dependency cycle detected")
 
-    return execution_order
+    return execution_groups
