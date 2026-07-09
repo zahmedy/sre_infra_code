@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from collections import deque, Counter
 from datetime import datetime
 import re
 import sqlite3
@@ -79,3 +80,55 @@ def find_unhealthy_racks(events: Iterable[str], threshold: int) -> list[str]:
     conn.close()
 
     return sorted(results)
+
+def detect_rack_failures(
+    events: Iterable[str],
+    window_seconds: int,
+    host_threshold: int,
+) -> list[str]:
+    racks = {}
+    bad_racks = set()
+    
+    pattern = re.compile(
+        r"^(?P<date>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)\s+"
+        r"(?P<host>host-[0-9]+)\s+"
+        r"(?P<rack>-[a-z]+)\s+"
+        r"DOWN$"
+    )
+
+    for event in events:
+        match = pattern.fullmatch(event)
+
+        if not match:
+            continue
+
+        try:
+            timestamp = datetime.fromisoformat(match.group('date')).timestamp()
+        except ValueError:
+            continue
+        host = match.group('host')
+        rack = match.group('rack')
+
+        if rack not in racks:
+            racks[rack] = {
+                "queue": deque(),
+                "host_count": Counter()
+            }
+
+        queue = racks[rack]["queue"]
+        host_count = racks[rack]["host_count"]
+
+        while queue and timestamp - queue[0][0] > window_seconds:
+            _, old_host = queue .popleft()
+            host_count[old_host] -= 1
+
+            if host_count[old_host] == 0:
+                del  host_count[old_host]
+
+        queue.append((timestamp, host))
+        host_count[host] += 1
+            
+        if len(host_count) >= host_threshold:
+            bad_racks.add(rack)
+
+    return sorted(bad_racks)
