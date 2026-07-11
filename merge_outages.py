@@ -62,3 +62,27 @@ def min_servers(jobs: list[list[int]]) -> int:
             max_servers = current_servers
     
     return max_servers
+
+
+[3, 4, -1, 1]  # returns 2
+[1, 2, 0]      # returns 3
+[7, 8, 9, 11]  # returns 1
+
+
+def first_missing_positive(nums: list[int]) -> int:
+    n = len(nums)
+
+    for i in range(n):
+        # While the current number is a valid positive number within range
+        # and is NOT currently setting at its correct 'home' index
+        while 1 <= nums[i] <= n and nums[nums[i] - 1] != nums[i]:
+            # Swap it to its correct home index: nums[i] - 1
+            correct_idx = nums[i] - 1
+            nums[i], nums[correct_idx] = nums[correct_idx], nums[i]
+
+    for i in range(n):
+        if nums[i] != i + 1:
+            return i + 1
+        
+    return n + 1
+
