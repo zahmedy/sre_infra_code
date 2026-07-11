@@ -41,14 +41,6 @@ jobs = [
     [3, 6],
 ]
 
-sorted = [
-    [1, 4],
-    [2, 5],
-    [3, 6],
-    [7, 9],
-]
-min_heap = [9, 6, 5, 4]
-
 def min_servers(jobs: list[list[int]]) -> int:
     events = []
 
