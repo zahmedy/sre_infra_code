@@ -86,3 +86,45 @@ def first_missing_positive(nums: list[int]) -> int:
         
     return n + 1
 
+from collections import deque
+
+def minimum_startup_time(
+    n: int,
+    durations: list[int],
+    dependencies: list[list[int]]
+) -> int:
+        
+    indegree = [0] * n
+    dependents = [[] for _ in range(n)]
+
+    for service, prerequisite in dependencies:
+        indegree[service] += 1
+        dependents[prerequisite].append(service)
+
+    queue = deque(
+        service for service in range(n) 
+        if indegree[service] == 0
+    )
+
+    processed_services = 0
+    completion_time = durations.copy()
+
+    while queue:
+        prerequisite = queue.popleft()
+        processed_services += 1
+
+        for service in dependents[prerequisite]:
+            completion_time[service] = max(
+                completion_time[service],
+                completion_time[prerequisite] + durations[service]
+            )
+            indegree[service] -= 1
+
+            if indegree[service] == 0:
+                queue.append(service)
+    
+    if processed_services != n:
+        return -1
+    
+    return max(completion_time)
+
