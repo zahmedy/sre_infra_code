@@ -23,3 +23,32 @@ class ErrorCounter:
                 total_errors += self.counts[index]
 
         return total_errors
+    
+
+requests = [3, 1, 4, 2, 6, 1]
+k = 3
+threshold = 11
+
+def earliest_overloaded_window(
+    requests: list[int],
+    k: int,
+    threshold: int
+) -> int:
+    if not requests or k <= 0 or k > len(requests):
+        return -1
+    
+    window_sum = sum(requests[:k])
+
+    if window_sum >= threshold:
+        return 0
+
+    for right in range(k, len(requests)):
+        left = right - k
+
+        window_sum -= requests[left]
+        window_sum += requests[right]
+
+        if window_sum >= threshold:
+            return left + 1
+
+    return -1
