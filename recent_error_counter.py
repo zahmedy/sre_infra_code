@@ -83,3 +83,60 @@ def first_frequent_error(
             return error_code
 
     return None
+
+
+def minimum_servers(jobs: list[list[int]]) -> int:
+    """
+    Return minimum number of servers to run deployement jobs ex: 
+    jobs = [[0, 30],[5, 10],[15, 20],[20, 25]]
+    Output: 2
+    I use sweep-line approache to solve this
+    """
+    if not jobs:
+        return 0
+    
+    events = []
+
+    for start_time, end_time in jobs:
+        events.append((start_time, 1))
+        events.append((end_time, -1))
+
+    # Sort by start time first if identical sort by change
+    events = sorted(
+        events,
+        key=lambda x: (x[0], x[1])
+    )
+
+    max_servers = 0
+    current_servers = 0
+
+    for _, change in events:
+        current_servers += change
+        max_servers = max(max_servers, current_servers)
+
+    return max_servers
+
+
+def merge_maintenance_windows(
+    windows: list[list[int]]
+) -> list[list[int]]:
+    """
+    Merge overlapping maintanence windows 
+    Example Input: windows = [[1, 4], [2, 6], [8, 10],[10, 12]]
+    Output: [[1, 6], [8, 12]]
+    """
+    if not windows:
+        return []
+
+    # Sort by start time only
+    windows = sorted(windows, key=lambda interval: interval[0])
+    merged: list[list[int]] = []
+
+    for start, end in windows:
+        if not merged or start > merged[-1][1]:
+            merged.append([start, end])
+        else:
+            merged[-1][1] = max(merged[-1][1], end)
+
+    return merged
+
