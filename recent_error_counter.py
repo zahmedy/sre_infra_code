@@ -52,3 +52,34 @@ def earliest_overloaded_window(
             return left + 1
 
     return -1
+
+from typing import Iterable
+from collections import deque, defaultdict
+
+def first_frequent_error(
+    logs: Iterable[tuple[int, str]],
+    k: int
+) -> str | None:
+    if k <= 0:
+        raise ValueError("K must be greater than 0")
+    
+    counter = defaultdict(int)
+    errors_pipe = deque()
+
+    for timestamp, error_code in logs:
+        window_start = timestamp - 59
+
+        while errors_pipe and errors_pipe[0][0] < window_start:
+            _, expired_code = errors_pipe.popleft()
+            counter[expired_code] -= 1
+
+            if counter[expired_code] == 0:
+                del counter[expired_code]
+
+        errors_pipe.append((timestamp, error_code))
+        counter[error_code] += 1
+
+        if counter[error_code] >= k:
+            return error_code
+
+    return None
