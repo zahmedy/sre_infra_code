@@ -100,3 +100,34 @@ def minimum_network_latency(
                 )
 
     return -1
+
+def connected_server_group(
+        n: int,
+        connections: list[list[int]]
+) -> int:
+    adjacency_list = [[] for _ in range(n)]
+
+    for node, neighbor in connections:
+        adjacency_list[node].append(neighbor)
+        adjacency_list[neighbor].append(node)
+
+    visited = set()
+    group_counter = 0
+
+    for server in range(n):
+        if server in visited:
+            continue
+
+        group_counter += 1
+        stack = [server]
+        visited.add(server)
+
+        while stack:
+            current = stack.pop()
+
+            for adj_server in adjacency_list[current]:
+                if adj_server not in visited:
+                    visited.add(adj_server)
+                    stack.append(adj_server)
+
+    return group_counter
