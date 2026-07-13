@@ -131,3 +131,36 @@ def connected_server_group(
                     stack.append(adj_server)
 
     return group_counter
+
+from collections import deque
+
+def has_dependency_cycle(
+    n: int,
+    dependencies: list[list[int]]
+) -> bool:
+    adjancey = [[] for _ in range(n)]
+    indegree = [0] * n
+
+    for service, prerequisite in dependencies:
+        adjancey[prerequisite].append(service)
+        indegree[service] += 1
+
+    queue = deque(
+        service
+        for service in range(n)
+        if indegree[service] == 0
+    )
+
+    services_done = 0
+
+    while queue:
+        current_service = queue.popleft()
+        services_done += 1
+
+        for service in adjancey[current_service]:
+            indegree[service] -=1
+            
+            if indegree[service] == 0:
+                queue.append(service)
+
+    return services_done != n
