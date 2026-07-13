@@ -67,33 +67,19 @@ def top_k_failing_services(
     
 class FailureTracker:
     def __init__(self) -> None:
-        self.counts = defaultdict(int)
-        self.max_heap = []
+        self.counts = Counter()
 
     def record_failure(self, service: str) -> None:
         self.counts[service] += 1
-        current_count = self.counts[service]
-
-        heapq.heappush(
-            self.max_heap,
-            (-current_count, service)
-        )
     
-    def top_k(self, k: int) -> list[str]:
-        result = []
-        valid_entries = []
+    def cheap_top_k(self, k: int) -> list[int]:
+        if k <= 0:
+            return []
+        
+        largest = heapq.nlargest(
+            k,
+            self.counts.items(),
+            key=lambda item: item[1]
+        )
 
-        while self.max_heap and len(result) < k:
-            negative_count, service = heapq.heappop(self.max_heap)
-            stored_count = - negative_count
-            
-            if stored_count != self.counts[service]:
-                continue
-
-            result.append(service)
-            valid_entries.append((negative_count, service))
-
-        for entry in valid_entries:
-            heapq.heappush(self.max_heap, entry)
-
-        return result
+        return [service for service, _ in largest]
