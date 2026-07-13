@@ -37,3 +37,27 @@ def services_to_rollback(
             rollback.append(service)
 
     return sorted(rollback)
+
+import heapq
+from collections import Counter
+
+def top_k_failing_services(
+    failures: list[str],
+    k: int
+) -> list[str]:
+    if k <= 0 or not failures:
+        return []
+
+    min_heap = []
+    counts = Counter(failures)
+
+    for service, count in counts.items():
+        heapq.heappush(min_heap, (count, service))
+
+        if len(min_heap) > k:
+            heapq.heappop(min_heap)
+
+    ordered = sorted(min_heap, reverse=True)
+    return [service for _,service in ordered]
+    
+
