@@ -42,3 +42,68 @@ class ThreadSafeRateLimiter:
                 return True
 
         return False
+    
+class RateLimiter:
+    def __init__(self, k) -> None:
+        self.k = k
+        self.tracker: dict[str, deque[int]] = {}
+    
+    def allow(self, user: str, timestamp: int) -> bool:
+        if user not in self.tracker:
+            self.tracker[user] = deque()
+        
+        queue = self.tracker[user]
+        window_start = timestamp - 59
+
+        while queue and queue[0] < window_start:
+            queue.popleft()
+
+        if len(queue) >= self.k:
+            return False
+
+        queue.append(timestamp)
+        return True
+    
+def sorted_longest_failure_streak(failures: list[int]) -> int:
+    if not failures:
+        return 0
+
+    current_streak = 1
+    max_streak = 1
+
+    for i in range(1, len(failures)):
+        if failures[i] == failures[i - 1] + 1:
+            current_streak += 1
+        else:
+            current_streak = 1
+
+        max_streak = max(max_streak, current_streak)
+
+    return max_streak
+
+def unsorted_longest_failure_streak(failures: list[int]) -> int:
+    if not failures:
+        return 0
+    
+    failures_set = set(failures)
+    max_streak = 0
+
+    for timestamp in failures_set:
+        # Check if timestamp start of a streak 
+        if timestamp - 1 not in failures_set:
+            current_timestamp = timestamp
+            current_streak = 1
+
+            while current_timestamp + 1 in failures_set:
+                current_timestamp += 1
+                current_streak +=1
+                
+            max_streak = max(max_streak, current_streak)
+
+    return max_streak
+
+        
+
+
+
+
