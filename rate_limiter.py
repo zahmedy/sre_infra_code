@@ -130,3 +130,59 @@ class UniqueError:
             self.candidates.popleft()
 
         return self.candidates[0] if self.candidates else None
+
+def max_concurrent_incidents(
+        incidents: list[list[int]]
+) -> int:
+    """
+    Sweep-line solution 
+    """
+    if not incidents:
+        return 0
+    
+    events = []
+
+    for start, end in incidents:
+        events.append((start, 1))
+        events.append((end, -1))
+
+    events.sort()
+
+    max_incidents = 0
+    current = 0
+
+    for _, change in events:
+        current += change
+        max_incidents = max(max_incidents, current)
+
+    return max_incidents
+
+import heapq
+
+def max_concurrent_incidents_v2(
+        incidents: list[list[int]]
+) -> int:
+    """
+    Min heap solution 
+    """
+    if not incidents:
+        return 0
+    
+    min_heap = []
+    max_incidents = 0
+
+    incidents = sorted(
+        incidents,
+        key=lambda interval: interval[0]
+    )
+
+    for start, end in incidents:
+        # Clear finished incidents from queue first
+        while min_heap and min_heap[0][0] <= start:
+            heapq.heappop(min_heap)
+
+        heapq.heappush(min_heap, (end, start))
+
+        max_incidents = max(max_incidents, len(min_heap))
+
+    return max_incidents
