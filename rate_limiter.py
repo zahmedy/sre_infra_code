@@ -102,8 +102,31 @@ def unsorted_longest_failure_streak(failures: list[int]) -> int:
 
     return max_streak
 
-        
+def first_single_error(errors: list[str]) -> str | None:
+    counts: dict[str, int] = {}
 
+    for error in errors:
+        counts[error] = counts.get(error, 0) + 1
 
+    for error in errors:
+        if counts[error] == 1:
+            return error
 
+    return None
 
+class UniqueError:
+    def __init__(self) -> None:
+        self.counts: dict[str, int] = {}
+        self.candidates = deque()
+
+    def add(self, error: str) -> None:
+        self.counts[error] = self.counts.get(error, 0) + 1
+
+        if self.counts[error] == 1:
+            self.candidates.append(error)
+
+    def first_unique(self) -> str | None:
+        while self.candidates and self.counts[self.candidates[0]] > 1:
+            self.candidates.popleft()
+
+        return self.candidates[0] if self.candidates else None
