@@ -11,7 +11,11 @@ def shortest_latency(graph, start, target):
     heap = [(0, start)]
 
     # Keep track of min current distance in distance HashMap
-    distance = { start: 0 }
+    distance = {
+        node: float("inf")
+        for node in graph
+    }
+    distance[start] = 0
 
     while heap:
         cost, node = heapq.heappop(heap)
@@ -21,12 +25,14 @@ def shortest_latency(graph, start, target):
             return cost
 
         # Explore all edges from node
-        for neighbor_cost, neighbor in graph[node]:
+        for neighbor, neighbor_cost in graph[node]:
             new_cost = neighbor_cost + cost
 
             # Is this route cheaper than current or skip
-            if new_cost > distance[neighbor]:
+            if new_cost < distance[neighbor]:
                 distance[neighbor] = new_cost
                 heapq.heappush(heap, (new_cost, neighbor))
+            if new_cost > distance[neighbor]:
+                continue
 
     return -1
